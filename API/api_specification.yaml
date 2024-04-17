@@ -1,0 +1,462 @@
+openapi: 3.0.3
+info:
+  title: Tinkoff_case
+  version: '1.0'
+  description: 'Это спецификация запросов для реализации задач из кейса'
+
+paths:
+  
+  /client:
+    get:
+      description: "Получить всех клиентов"
+      responses:
+        '200':
+          description: 'Клиенты получены'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
+  
+  /client/{id}:
+    get:
+      description: "Получить клиента по id"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 'Клиент получен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '404':
+          description: "Нет клиента с таким id"
+
+    post:
+      description: "Обновить данные клиента по id"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: name
+          schema:
+            type: string
+            example: 'Иванов Иван Иванович'
+          required: true
+        - in: query
+          name: INN
+          required: true
+          schema:
+            type: integer
+            example: 1234567890
+      responses:
+        '201':
+          description: 'Данные клиента обновлены'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '404':
+          description: "Нет клиента с таким id"
+        '409':
+          description: "Новый ИНН уже занят"
+
+  /client/code/{code}:
+    get:
+      description: "Получить клиентов, заблокированных по конкретному коду"
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 'Клиенты получены'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
+        '404':
+          description: "Данный код не указан в таблице кодов"
+  
+  /client/check/{id}:
+    get:
+      description: "Получить статус клиента по id"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 'Статус клиента получен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Code'
+        '404':
+          description: "Нет клиента с таким id"
+  
+  /payment:
+    get:
+      description: "Получить все платежи"
+      responses:
+        '200':
+          description: 'Платежи получены'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+  
+  /payment/{id}:
+    get:
+      description: "Получить платеж по id"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 'Платеж получен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: "Нет платежа с таким id"
+  
+    post:
+      description: "Обновить реквизиты платежа по id"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: requisites
+          required: true
+          schema:
+            type: string
+            example: '(реквизиты платежа)'
+      responses:
+        '201':
+          description: 'Данные платежа обновлены'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: "Нет платежа с таким id"
+        '409':
+          description: "Некорректные реквизиты"
+  
+  /payment/code/{code}:
+    get:
+      description: "Получить платежи, заблокированные по конкретному коду"
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 'Платежи получены'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '404':
+          description: "Данный код не указан в таблице кодов"
+  
+  /payment/client/{id}:
+    get:
+      description: "Получение всех платежей конректного клиента"
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+          example: 1
+      responses:
+        '200':
+          description: 'Платежи получены'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '404':
+          description: "Нет клиента с таким id"
+  
+  /client/block/{id}:
+    post:
+      description: "Заблокировать клиента"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: code
+          required: true
+          schema:
+            type: integer
+            example: 100
+      responses:
+        '201':
+          description: 'Клиент заблокирован'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '404':
+          description: "Нет клиента с таким id"
+        '406':
+          description: "Код равен 0"
+        '409':
+          description: "Указанного кода нет в таблице кодов"
+  
+  /client/unblock/{id}:
+    post:
+      description: "Разблокировать клиента"
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '201':
+          description: 'Клиент разблокирован'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '404':
+          description: "Нет клиента с таким id"
+  
+  /client/add:
+    put:
+      description: "Добавить клиента"
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+            example: 'Иванов Иван Иванович'
+          required: true
+        - in: query
+          name: INN
+          required: true
+          schema:
+            type: integer
+            example: 1234567890
+      responses:
+        '201':
+          description: 'Клиент создан'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '409':
+          description: "Клиент с таким ИНН уже есть"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+  
+  /payment/add:
+    put:
+      description: "Добавить платеж"
+      parameters:
+        - in: query
+          name: requisites
+          required: true
+          schema:
+            type: string
+            example: '(реквизиты платежа)'
+        - in: query
+          name: client_id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '201':
+          description: 'Платеж создан'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: "Нет клиента с таким id"
+        '409':
+          description: "Некорректные реквизиты"
+  
+  /code:
+    get:
+      description: "Получить все коды"
+      responses:
+        '200':
+          description: 'Коды получены'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Code'
+  
+  /code/{code}:
+    get:
+      description: "Получить код по номеру"
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: integer
+            example: 100
+      responses:
+        '200':
+          description: 'Код получен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Code'
+        '404':
+          description: "Нет кода с таким номером"
+  
+    post:
+      description: "Обновить код"
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: integer
+            example: 200
+        - in: query
+          name: description
+          required: true
+          schema:
+            type: string
+            example: 'Подозрительная деятельность'
+      responses:
+        '201':
+          description: 'Код обновлен'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Code'
+        '404':
+          description: "Нет кода с таким номером"
+  
+    put:
+      description: "Добавить код"
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: integer
+            example: 200
+        - in: query
+          name: description
+          required: true
+          schema:
+            type: string
+            example: 'Подозрительная деятельность'
+      responses:
+        '201':
+          description: 'Код создан'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Code'
+        '409':
+          description: "Код уже существует"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Code'
+  
+
+
+components:
+  schemas:
+    Client:
+      type: object
+      required:
+        - name
+        - INN
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'Иванов Иван Иванович'
+        code:
+          $ref: '#/components/schemas/Code'
+        INN:
+          type: integer
+          example: 1234567890
+    Payment:
+      type: object
+      required:
+        - requisites
+      properties:
+        id:
+          type: integer
+          example: 1
+        requisites:
+          type: string
+          example: '(реквизиты)'
+        code:
+          $ref: '#/components/schemas/Code'
+        client_id:
+          $ref: '#/components/schemas/Client'
+    Code:
+      type: object
+      required:
+        - description
+      properties:
+        code_number:
+          type: integer
+          example: 0
+        description:
+          type: string
+          example: 'Клиент не заблокирован'
